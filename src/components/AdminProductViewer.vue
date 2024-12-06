@@ -123,10 +123,12 @@ const selectedProduct = reactive({
     price: null
 });
 const selectedIndex = ref(null);
-const selectProduct = index => {
-    selectedIndex.value = index;
+const selectedId = ref(null)
+const selectProduct = payload => {
+    selectedIndex.value = payload.index;
+    selectedId.value = payload.id;
     
-    const storeProd = store.getters[`${selectedStoreMinPlu.value}/get${selectedStore.value}`](index);
+    const storeProd = store.getters[`${selectedStoreMinPlu.value}/get${selectedStore.value}`](payload.index);
 
     selectedProduct.name = storeProd.name;
     selectedProduct.price = storeProd.price;
@@ -134,13 +136,12 @@ const selectProduct = index => {
 const updateProduct = () => {
     if(selectedIndex.value != null) {
         store.dispatch(`${selectedStoreMinPlu.value}/update${selectedStore.value}`, {
-            index: selectedIndex.value,
-            product: {
-                name: selectedProduct.name, 
-                price: selectedProduct.price
-            }
+            id: selectedId.value,
+            name: selectedProduct.name, 
+            price: selectedProduct.price
         })
 
+        selectedId.value = null;
         selectedIndex.value = null;
         selectedProduct.name = null;
         selectedProduct.price = null;
@@ -150,7 +151,9 @@ const updateProduct = () => {
 //Supprimer Produit
 const deleteProduct = () => {
     if(selectedIndex.value != null) {
-        store.dispatch(`${selectedStoreMinPlu.value}/remove${selectedStore.value}`, selectedIndex.value);
+        store.dispatch(`${selectedStoreMinPlu.value}/remove${selectedStore.value}`, selectedId.value);
+        
+        selectedId.value = null;
         selectedIndex.value = null;
         selectedProduct.name = null;
         selectedProduct.price = null;

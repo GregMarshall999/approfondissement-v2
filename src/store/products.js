@@ -1,12 +1,8 @@
 import { parseHalfPrice } from "@/helper/soldesHelper";
+import { createProduct, deleteProduct, findProducts, updateProduct } from "@/service/productService";
 
 const state = {
-    products: [
-        { name: 'Bananes', price: 2 }, 
-        { name: 'Pommes', price: 1 },
-        { name: 'Salade', price: 3 },
-        { name: 'Abricots', price: 2.33 }
-    ], 
+    products: [], 
     sales: false
 };
 
@@ -69,27 +65,81 @@ const mutations = {
     },
     DELETE_PRODUCT: (state, payload) => {
         state.products.splice(payload, 1);
+    }, 
+    SET_PRODUCTS: (state, payload) => {
+        state.products = payload;
     }
 }
 
 const actions = {
-    augmentPrice: (context, payload) => {
-        setTimeout(() => context.commit('AUGMENT_PRICES', payload), 500);
+    augmentPrice: async (context, payload) => {
+        const prods = context.getters.getProducts.map(p => {
+            return {
+                id: p.id, 
+                name: p.name, 
+                price: p.price
+            }
+        });
+        
+        for(var p of prods) {
+            p.price += payload;
+            await updateProduct(p.id, p);
+        }
+
+        context.dispatch('loadProducts');
     },
-    reduicePrice: context => {
-        setTimeout(() => context.commit('REDUICE_PRICES'), 1000);
+    reduicePrice: async context => {
+        const prods = context.getters.getProducts.map(p => {
+            return {
+                id: p.id, 
+                name: p.name, 
+                price: p.price
+            }
+        });
+        
+        for(var p of prods) {
+            p.price -= 1;
+            await updateProduct(p.id, p);
+        }
+
+        context.dispatch('loadProducts');
     }, 
     updateSales: (context, payload) => {
         setTimeout(() => context.commit('SET_SALES', payload), 200);
     }, 
     addProduct: (context, payload) => {
-        context.commit('PUSH_PRODUCT', payload);
+        const prod = { ...payload };
+
+        createProduct(prod).then(res => {
+            console.log(res);
+            if(res.status == 201) {
+                context.dispatch('loadProducts');
+            }
+        });
     },
     updateProduct: (context, payload) => {
-        context.commit('SET_PRODUCT', payload);
+        updateProduct(payload.id, payload)
+            .then(res => {
+                if(res.status == 200) {
+                    context.dispatch('loadProducts');
+                }
+            });
     }, 
     removeProduct: (context, payload) => {
-        context.commit('DELETE_PRODUCT', payload);
+        deleteProduct(payload).then(res => {
+            if(res.status == 200) {
+                context.dispatch('loadProducts');
+            }
+        })
+    }, 
+    loadProducts: context => {
+        findProducts()
+            .then(res => {
+                context.commit('SET_PRODUCTS', res.data);
+            })
+            .catch(error => {
+                console.error('Error loading product', error);
+            })
     }
 }
 

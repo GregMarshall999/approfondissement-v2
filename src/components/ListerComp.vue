@@ -3,6 +3,7 @@
         <ProductComp 
             v-for="(p, index) in products"
             :index="index"
+            :id="p.id"
             @selected="prodSelected"
         >
             <template #label>
@@ -36,8 +37,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['productSelected']);
-const prodSelected = index => {
-    emit('productSelected', index);
+const prodSelected = payload => {
+    emit('productSelected', payload);
 }
 </script>
 
