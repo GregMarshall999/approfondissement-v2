@@ -1,5 +1,5 @@
 <template>
-    <div class="viewer">
+    <div class="viewer" ref="productMouse">
         <h2>Produits Disponibles</h2>
 
         <div style="display: flex; gap: 10%;">
@@ -9,6 +9,8 @@
             />
             <UserCartComp />
         </div>
+
+        <p>{{ x }} | {{ y }}</p>
     </div>
 </template>
 
@@ -16,6 +18,8 @@
 import { useStore } from 'vuex';
 import ListerComp from '@/components/ListerComp.vue';
 import UserCartComp from '@/components/UserCartComp.vue';
+import { useMouse } from '@/composable/MouseCompose';
+import { ref } from 'vue';
 
 const store = useStore();
 
@@ -27,6 +31,8 @@ const addToCart = payload => {
     }
 }
 
+const productMouse = ref(null);
+const { x, y } = useMouse(productMouse);
 </script>
 
 <style scoped>

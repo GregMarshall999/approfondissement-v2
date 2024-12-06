@@ -29,7 +29,7 @@
             </li>
         </ListerComp>
 
-        <div class="admin-tools">
+        <div class="admin-tools" ref="adminMouse">
             <div class="admin-controls">
                 <h3>Contrôlles Admin</h3>
 
@@ -69,6 +69,8 @@
                     <option value="Book">Livre</option>
                 </select>
             </div>
+
+            <p>{{ x }} | {{ y }}</p>
         </div>
     </div>
 </template>
@@ -80,6 +82,7 @@ import ListerComp from '@/components/ListerComp.vue';
 import ProductComp from '@/components/ProductComp.vue';
 import CustomForm from '../form/CustomForm.vue';
 import { requiredPositiveNumber, requiredText } from '@/helper/validationHelper';
+import { useMouse } from '@/composable/MouseCompose';
 
 const store = useStore();
 const selectedStore = computed(() => store.getters.getSelectedStore);
@@ -191,6 +194,9 @@ const updateSelectedStore = () => {
 
     sales.value = storeSalesValue.value;
 }
+
+const adminMouse = ref(null);
+const { x, y } = useMouse(adminMouse);
 </script>
 
 <style lang="scss" scoped>
