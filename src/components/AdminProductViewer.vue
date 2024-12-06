@@ -64,6 +64,16 @@
                 </form>
                 <button @click="deleteProduct">Supprimer</button>
             </div>
+
+            <div class="store-selector">
+                <select
+                    v-model="storeOption"
+                    @change="updateSelectedStore"
+                >
+                    <option value="Product">Produit</option>
+                    <option value="Book">Livre</option>
+                </select>
+            </div>
         </div>
     </div>
 </template>
@@ -75,48 +85,55 @@ import ListerComp from './ListerComp.vue';
 import ProductComp from './ProductComp.vue';
 
 const store = useStore();
+const selectedStore = computed(() => store.getters.getSelectedStore);
+const selectedStorePlu = computed(() => store.getters.getSelectedStorePlu);
+const selectedStoreMinPlu = computed(() => store.getters.getSelectedStoreMinPlu);
 
 //Controlles Admin
-const sales = ref(false);
+const storeSalesValue = computed(() => store.getters[`${selectedStoreMinPlu.value}/getSales`]);
+const sales = ref(storeSalesValue.value);
 const updateSales = () => {
-    store.dispatch('products/updateSales', sales.value);
+    store.dispatch(`${selectedStoreMinPlu.value}/updateSales`, sales.value);
 }
 const augmentPrice = amount => {
-    store.dispatch('products/augmentPrice', amount);
+    store.dispatch(`${selectedStoreMinPlu.value}/augmentPrice`, amount);
 }
 const reduicePrice = () => {
-    store.dispatch('products/reduicePrice');
+    store.dispatch(`${selectedStoreMinPlu.value}/reduicePrice`);
 }
 
 //Ajouter Produit
-const productCount = computed(() => store.getters['products/countProducts']);
+const productCount = computed(() => store.getters[`${selectedStoreMinPlu.value}/count${selectedStorePlu.value}`]);
 const newProductMode = ref(false);
 const product = reactive({
     name: null, 
     price: null
 });
 const newProduct = () => {
-    store.dispatch('products/addProduct', product);
+    let payload = { ...product };
+    store.dispatch(`${selectedStoreMinPlu.value}/add${selectedStore.value}`, payload);
     newProductMode.value = false;
+    product.name = null;
+    product.price = null;
 }
 
 //Editer Produit
 const selectedProduct = reactive({
-    name: '', 
-    price: 0
+    name: null, 
+    price: null
 });
 const selectedIndex = ref(null);
 const selectProduct = index => {
     selectedIndex.value = index;
     
-    const storeProd = store.getters['products/getProduct'](index);
+    const storeProd = store.getters[`${selectedStoreMinPlu.value}/get${selectedStore.value}`](index);
 
     selectedProduct.name = storeProd.name;
     selectedProduct.price = storeProd.price;
 }
 const updateProduct = () => {
     if(selectedIndex.value != null) {
-        store.dispatch('products/updateProduct', {
+        store.dispatch(`${selectedStoreMinPlu.value}/update${selectedStore.value}`, {
             index: selectedIndex.value,
             product: {
                 name: selectedProduct.name, 
@@ -125,19 +142,32 @@ const updateProduct = () => {
         })
 
         selectedIndex.value = null;
-        selectedProduct.name = '';
-        selectedProduct.price = 0;
+        selectedProduct.name = null;
+        selectedProduct.price = null;
     }
 }
 
 //Supprimer Produit
 const deleteProduct = () => {
-    if(selectedIndex.value) {
-        store.dispatch('products/removeProduct', selectedIndex.value);
+    if(selectedIndex.value != null) {
+        store.dispatch(`${selectedStoreMinPlu.value}/remove${selectedStore.value}`, selectedIndex.value);
         selectedIndex.value = null;
-        selectedProduct.name = '';
-        selectedProduct.price = 0;
+        selectedProduct.name = null;
+        selectedProduct.price = null;
     }
+}
+
+//Changement store
+const currentStore = computed(() => store.getters.getSelectedStore);
+const storeOption = ref(currentStore.value);
+const updateSelectedStore = () => {
+    selectedIndex.value = null;
+    selectedProduct.name = null;
+    selectedProduct.price = null;
+
+    store.dispatch('setSelectedStore', storeOption.value);
+
+    sales.value = storeSalesValue.value;
 }
 </script>
 

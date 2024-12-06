@@ -1,22 +1,20 @@
 import { parseHalfPrice } from "@/helper/soldesHelper";
 
 const state = {
-    products: [
-        { name: 'Bananes', price: 2 }, 
-        { name: 'Pommes', price: 1 },
-        { name: 'Salade', price: 3 },
-        { name: 'Abricots', price: 2.33 }
+    books: [
+        { name: 'G.O.T', price: 2 }, 
+        { name: 'L.O.T.R', price: 1 }
     ], 
     sales: false
 };
 
 const getters = {
-    getProducts: state => {
+    getBooks: state => {
         if(!state.sales) {
-            return state.products;
+            return state.books;
         }
 
-        let soldes = state.products.map(p => {
+        let soldes = state.books.map(p => {
             return {
                 name: `**${p.name}**`, 
                 price: parseHalfPrice(p.price)
@@ -24,11 +22,11 @@ const getters = {
         });
         return soldes;
     }, 
-    getProduct: state => payload => {
-        return state.products[payload];
+    getBook: state => payload => {
+        return state.books[payload];
     }, 
-    countProducts: state => {
-        return state.products.length;
+    countBooks: state => {
+        return state.books.length;
     }, 
     getSales: state => {
         return state.sales;
@@ -37,22 +35,22 @@ const getters = {
 
 const mutations = {
     AUGMENT_PRICES: (state, payload) => {
-        state.products.forEach(p => p.price += payload);
+        state.books.forEach(p => p.price += payload);
     },
     REDUICE_PRICES: state => {
-        state.products.forEach(p => p.price -= 1);
+        state.books.forEach(p => p.price -= 1);
     }, 
     SET_SALES: (state, payload) => {
         state.sales = payload;
     }, 
-    PUSH_PRODUCT: (state, payload) => {
-        state.products.push(payload);
+    PUSH_BOOK: (state, payload) => {
+        state.books.push(payload);
     },
-    SET_PRODUCT: (state, payload) => {
-        state.products[payload.index] = payload.product;
+    SET_BOOK: (state, payload) => {
+        state.books[payload.index] = payload.product;
     },
-    DELETE_PRODUCT: (state, payload) => {
-        state.products.splice(payload, 1);
+    DELETE_BOOK: (state, payload) => {
+        state.books.splice(payload, 1);
     }
 }
 
@@ -66,14 +64,14 @@ const actions = {
     updateSales: (context, payload) => {
         setTimeout(() => context.commit('SET_SALES', payload), 200);
     }, 
-    addProduct: (context, payload) => {
-        context.commit('PUSH_PRODUCT', payload);
+    addBook: (context, payload) => {
+        context.commit('PUSH_BOOK', payload);
     },
-    updateProduct: (context, payload) => {
-        context.commit('SET_PRODUCT', payload);
+    updateBook: (context, payload) => {
+        context.commit('SET_BOOK', payload);
     }, 
-    removeProduct: (context, payload) => {
-        context.commit('DELETE_PRODUCT', payload);
+    removeBook: (context, payload) => {
+        context.commit('DELETE_BOOK', payload);
     }
 }
 

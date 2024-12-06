@@ -22,7 +22,11 @@ import { useStore } from 'vuex';
 import ProductComp from './ProductComp.vue';
 
 const store = useStore();
-const products = computed(() => store.getters['products/getProducts']);
+
+const selectedStorePlu = computed(() => store.getters.getSelectedStorePlu);
+const selectedStoreMinPlu = computed(() => store.getters.getSelectedStoreMinPlu);
+
+const products = computed(() => store.getters[`${selectedStoreMinPlu.value}/get${selectedStorePlu.value}`]);
 
 const props = defineProps({
     isAdmin: {
