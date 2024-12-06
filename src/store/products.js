@@ -32,6 +32,22 @@ const getters = {
     }, 
     getSales: state => {
         return state.sales;
+    }, 
+    findProductPrice: state => payload => {
+        const cost = state.products.filter(p => {
+            if(p.name == payload) {
+                return p.price;
+            }
+        });
+
+        if(cost.length == 1) {
+            if(state.sales) {
+                return parseHalfPrice(cost[0].price);
+            }
+            else {
+                return cost[0].price;
+            }
+        }
     }
 };
 

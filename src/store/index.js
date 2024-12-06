@@ -1,6 +1,7 @@
 import { createStore } from "vuex";
 import products from "./products";
 import books from "./books";
+import cart from "./cart";
 
 const state = {
     selectedStore: 'Product'
@@ -34,7 +35,8 @@ const store = createStore({
     strict: true,
     modules: {
         products, 
-        books
+        books, 
+        cart
     }, 
     state, 
     getters, 

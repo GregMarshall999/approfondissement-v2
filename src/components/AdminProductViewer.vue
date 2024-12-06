@@ -65,7 +65,7 @@
                 <button @click="deleteProduct">Supprimer</button>
             </div>
 
-            <div class="store-selector">
+            <div v-if="false" class="store-selector">
                 <select
                     v-model="storeOption"
                     @change="updateSelectedStore"
