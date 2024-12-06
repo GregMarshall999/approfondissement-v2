@@ -46,11 +46,16 @@ const total = computed(() => {
 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@use '../scss/global';
 
 li {
     display: flex;
     gap: 1em;
+}
+
+button {
+    @include global.button;
 }
 
 </style>

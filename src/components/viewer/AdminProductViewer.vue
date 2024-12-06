@@ -9,6 +9,7 @@
                 v-if="!newProductMode"
                 :index="productCount"
                 @selected="newProductMode = true"
+                :disabled="editProductMode"
             >
                 <template #label>
                     <span class="name">Nouveau Produit</span>
@@ -18,21 +19,13 @@
                 </template>
             </ProductComp>
             <li v-else>
-                <form @submit.prevent="newProduct">
-                    <input 
-                        type="text"
-                        placeholder="Nom Produit..."
-                        required
-                        v-model="product.name"    
-                    /> 
-                    <input 
-                        type="number"
-                        placeholder="Prix Produit..."
-                        required
-                        v-model="product.price"    
-                    /> 
-                    <button type="submit">Ajouter</button>
-                </form>
+                <CustomForm 
+                    :fields="formFields"
+                    :submitButtonText="'Ajouter'"
+                    @success="newProduct"
+                    style="margin-bottom: 1em;"
+                />
+                <button class="cancel" @click="newProductMode = false">Annuler</button>
             </li>
         </ListerComp>
 
@@ -55,13 +48,15 @@
                 <button @click="reduicePrice">Réduire Prix</button>
             </div>
 
-            <div class="product-editor">
-                <form @submit.prevent="updateProduct">
-                    <h3>Editer un Produit</h3>
-                    <input type="text" v-model="selectedProduct.name" placeholder="Nom Produit"/>
-                    <input type="number" v-model="selectedProduct.price" placeholder="Prix Produit"/>
-                    <button type="submit">Editer</button>
-                </form>
+            <div class="product-editor" v-show="!newProductMode">
+                <h3 style="margin-bottom: 1em;">Editer un Produit</h3>
+
+                <CustomForm
+                    :fields="formFields"
+                    :submitButtonText="'Editer'"
+                    @success="updateProduct"
+                />
+
                 <button @click="deleteProduct">Supprimer</button>
             </div>
 
@@ -81,8 +76,10 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
 import { useStore } from 'vuex';
-import ListerComp from './ListerComp.vue';
-import ProductComp from './ProductComp.vue';
+import ListerComp from '@/components/ListerComp.vue';
+import ProductComp from '@/components/ProductComp.vue';
+import CustomForm from '../form/CustomForm.vue';
+import { requiredPositiveNumber, requiredText } from '@/helper/validationHelper';
 
 const store = useStore();
 const selectedStore = computed(() => store.getters.getSelectedStore);
@@ -102,49 +99,70 @@ const reduicePrice = () => {
     store.dispatch(`${selectedStoreMinPlu.value}/reduicePrice`);
 }
 
+//Gestion Formulaire
+const newProductMode = ref(false);
+const editProductMode = ref(false);
+const formFields = reactive([
+    {
+        placeholder: 'Nom Produit...',
+        type: 'text', 
+        value: null, 
+        rules: [requiredText]
+    }, 
+    {
+        placeholder: 'Prix Produit...',
+        type: 'number', 
+        value: null, 
+        rules: [requiredPositiveNumber], 
+        step: .01
+    }
+]);
+
 //Ajouter Produit
 const productCount = computed(() => store.getters[`${selectedStoreMinPlu.value}/count${selectedStorePlu.value}`]);
-const newProductMode = ref(false);
-const product = reactive({
-    name: null, 
-    price: null
-});
-const newProduct = () => {
-    let payload = { ...product };
-    store.dispatch(`${selectedStoreMinPlu.value}/add${selectedStore.value}`, payload);
+const newProduct = result => {
+    const product = {};
+    const keys = ['name', 'price'];
+
+    for(var i = 0; i < result.length; i++) {
+        product[keys[i]] = result[i];
+    }
+
+    store.dispatch(`${selectedStoreMinPlu.value}/add${selectedStore.value}`, product);
+    formFields[0].value = null;
+    formFields[1].value = null;
     newProductMode.value = false;
-    product.name = null;
-    product.price = null;
 }
 
 //Editer Produit
-const selectedProduct = reactive({
-    name: null, 
-    price: null
-});
 const selectedIndex = ref(null);
 const selectedId = ref(null)
 const selectProduct = payload => {
-    selectedIndex.value = payload.index;
-    selectedId.value = payload.id;
-    
-    const storeProd = store.getters[`${selectedStoreMinPlu.value}/get${selectedStore.value}`](payload.index);
+    if(!newProductMode.value) {
+        editProductMode.value = true;
 
-    selectedProduct.name = storeProd.name;
-    selectedProduct.price = storeProd.price;
+        selectedIndex.value = payload.index;
+        selectedId.value = payload.id;
+        
+        const storeProd = store.getters[`${selectedStoreMinPlu.value}/get${selectedStore.value}`](payload.index);
+
+        formFields[0].value = storeProd.name;
+        formFields[1].value = storeProd.price;
+    }
 }
-const updateProduct = () => {
+const updateProduct = result => {
     if(selectedIndex.value != null) {
         store.dispatch(`${selectedStoreMinPlu.value}/update${selectedStore.value}`, {
             id: selectedId.value,
-            name: selectedProduct.name, 
-            price: selectedProduct.price
+            name: result[0], 
+            price: result[1]
         })
 
         selectedId.value = null;
         selectedIndex.value = null;
-        selectedProduct.name = null;
-        selectedProduct.price = null;
+        formFields[0].value = null;
+        formFields[1].value = null;
+        editProductMode.value = false;
     }
 }
 
@@ -155,8 +173,9 @@ const deleteProduct = () => {
         
         selectedId.value = null;
         selectedIndex.value = null;
-        selectedProduct.name = null;
-        selectedProduct.price = null;
+        formFields[0].value = null;
+        formFields[1].value = null;
+        editProductMode.value = false;
     }
 }
 
@@ -175,6 +194,7 @@ const updateSelectedStore = () => {
 </script>
 
 <style lang="scss" scoped>
+@use '../../scss/global';
 
 .lister {
     background: #6b662a;
@@ -182,6 +202,10 @@ const updateSelectedStore = () => {
     margin-bottom: 30px;
     padding: 10px 20px;
     color: black;
+
+    .cancel {
+        @include global.button;
+    }
 
     .admin-tools {
         background: rgba(255, 255, 255, 0.432);
@@ -267,10 +291,7 @@ const updateSelectedStore = () => {
 }
 
 button {
-    width: fit-content;
-    padding: 10px;
-    border-radius: 0;
-    border: none;
+    @include global.button;
 }
 
 </style>

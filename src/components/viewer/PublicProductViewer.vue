@@ -14,8 +14,8 @@
 
 <script setup>
 import { useStore } from 'vuex';
-import ListerComp from './ListerComp.vue';
-import UserCartComp from './UserCartComp.vue';
+import ListerComp from '@/components/ListerComp.vue';
+import UserCartComp from '@/components/UserCartComp.vue';
 
 const store = useStore();
 

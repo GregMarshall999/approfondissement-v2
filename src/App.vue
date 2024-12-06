@@ -5,8 +5,8 @@
 
 <script setup>
 import { onBeforeMount } from 'vue';
-import AdminProductViewer from './components/AdminProductViewer.vue';
-import PublicProductViewer from './components/PublicProductViewer.vue';
+import AdminProductViewer from './components/viewer/AdminProductViewer.vue';
+import PublicProductViewer from './components/viewer/PublicProductViewer.vue';
 import { useStore } from 'vuex';
 
 const store = useStore()

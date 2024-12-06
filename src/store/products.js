@@ -111,7 +111,6 @@ const actions = {
         const prod = { ...payload };
 
         createProduct(prod).then(res => {
-            console.log(res);
             if(res.status == 201) {
                 context.dispatch('loadProducts');
             }
